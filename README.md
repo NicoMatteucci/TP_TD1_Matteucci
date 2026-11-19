@@ -72,7 +72,7 @@ El sistema implementa una arquitectura **FSMD** (*Finite State Machine with Data
 
 ### 4.2. Descripción de la Unidad de Control (`control_legajo`)
 
-La unidad de control está codificada siguiendo el estándar de **3 bloques `always`** (registro de estado secuencial, lógica combinacional de estado futuro y lógica combinacional de salidas. Y valores por defecto para evitar *latches*):
+La unidad de control está codificada siguiendo el estándar de **3 bloques `always`** (registro de estado secuencial, lógica combinacional de estado futuro y lógica combinacional de salidas con valores por defecto para evitar *latches*):
 
 1. **`S_IDLE` (`2'b00`):** Estado de reposo tras el reset asincrónico (`arst = 1`) o luego de finalizar una operación. Mantiene `busy = 0` y `done = 0`, conservando el último dígito verificador calculado. Ante `start = 1`, activa `clr_acum` y `clr_cnt` para limpiar el acumulador y el índice de posición, pasando a `S_LOAD`.
 2. **`S_LOAD` (`2'b01`):** Estado de recepción y acumulación ponderada (`busy = 1`, `sel_op = 0`). Ignora pulsos adicionales en `start`. Si `valid = 0`, mantiene deshabilitados los registros conservando la suma parcial y el peso actual. Por cada flanco ascendente con `valid = 1`, habilita `en_acum` y `en_cnt` para incorporar `dato * peso`. Al validarse el sexto dígito (`ultimo_digito == 1`), transiciona a `S_MOD`.
@@ -172,7 +172,7 @@ El diseño fue verificado mediante el banco de pruebas `tb_verificador_legajo.v`
 | `100007` | `21` | `10` | `0` | `0` | 1 | EXITO |
 | `000000` | `0` | `0` | `0` | `0` | 0 | EXITO |
 | `999999` | `243` | `1` | `1` | `1` | 22 | EXITO |
-| `204710` | `65` | `10` | `0` | `0` | `5` | EXITO |
+| `204710` | `65` | `10` | `0` | `0` | 5 | EXITO |
 
 ### 6.2. Salida de Consola (`make run`)
 
