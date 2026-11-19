@@ -83,10 +83,44 @@ La unidad de control está codificada siguiendo el estándar de **3 bloques `alw
 
 <img width="1131" height="1600" alt="fsm_control" src="https://github.com/user-attachments/assets/92a42445-e141-4b69-9cfd-9f6560989d46" />
 
-#### Datapath (RTL)
+
+---
+
+### 4.3. Descripción del Camino de Datos (`datapath_legajo`)
+
+El camino de datos ejecuta las operaciones aritméticas y almacena el estado interno del cálculo bajo el gobierno de las señales de control emitidas por `control_legajo`. Su estructura se organiza en cuatro bloques funcionales:
+
+1. **Registros de almacenamiento (Secuenciales con `arst`):**
+   * **`cnt_pos` (`3 bits`):** Contador ascendente que mantiene el índice del dígito actual (`idx_digito`, de `0` a `5`). Se reinicia sincrónicamente mediante `clr_cnt` y avanza solo cuando `en_cnt = 1`.
+   * **`reg_acumulador` (`8 bits`):** Registro central (`acum_q`) que almacena tanto las sumas ponderadas parciales durante `S_LOAD` como los restos sucesivos durante `S_MOD`. Se actualiza cuando `en_acum` o `clr_acum` están activos.
+   * **`reg_verificador` (`4 bits`):** Registro de salida (`verificador`) que captura el dígito verificador final al activarse `en_verif` y lo retiene estable entre operaciones sucesivas.
+
+2. **Unidades funcionales (Combinacionales):**
+   * **`u_peso_prod` (`calc_peso_prod`):** Decodifica `idx_digito` (`0..5`) para asignar el peso correspondiente ($7, 6, 5, 4, 3, 2$) y calcula el producto parcial `dato * peso` en un bus de `6 bits` (máximo $9 \times 7 = 63$).
+   * **Sumador y Restador (`8 bits`):** Calculan en paralelo las dos posibles actualizaciones del acumulador: la suma ponderada (`acum_q + producto`) y la resta modular (`acum_q - 11`).
+   * **Conversor Módulo 11 a BCD:** Mapea combinacionalmente el resto final para que, si `acum_q == 10`, la entrada del registro de salida sea `4'd0`, y en cualquier otro caso (`0..9`) pase `acum_q[3:0]`.
+
+3. **Lógica de enrutamiento (Multiplexores):**
+   * **`mux_operacion` (`sel_op`):** Selecciona entre la rama de acumulación (`sel_op = 0`) y la rama de resta de 11 (`sel_op = 1`), permitiendo reutilizar el mismo registro `reg_acumulador` en ambas fases del algoritmo.
+   * **`mux_clear_acum` (`clr_acum`):** Ante un nuevo inicio (`clr_acum = 1`), enruta `8'd0` hacia la entrada del acumulador para limpiarlo sincrónicamente antes de cargar el primer dígito.
+
+4. **Generación de banderas de estado (hacia la FSM):**
+   * **`ultimo_digito`:** Se activa en `1` cuando `idx_digito == 3'd5`, indicando a la unidad de control que se está procesando el sexto y último dígito.
+   * **`menor_11`:** Comparador sin signo (`acum_q < 8'd11`) que informa a la unidad de control que el acumulador ya contiene el resto definitivo.
+
+#### Diagrama RTL del Datapath
 
 <img width="1131" height="1600" alt="datapath_rtl" src="https://github.com/user-attachments/assets/3f484629-a432-4743-a4ae-adae338a74cf" />
 
+#### Tabla de Micro-operaciones RTL (Palabras de Control)
+
+| Fase / Estado FSM | Condición | Señales Activas de Control | Transferencia entre Registros (RTL) |
+| :--- | :--- | :--- | :--- |
+| **Inicio (`S_IDLE` / `S_DONE`)** | `start = 1` | `clr_acum = 1`, `clr_cnt = 1` | `acum_q <= 0`, `idx_digito <= 0` *(conserva `verificador`)* |
+| **Carga (`S_LOAD`)** | `valid = 0` | Ninguna (`en_acum = 0`, `en_cnt = 0`) | `acum_q <= acum_q`, `idx_digito <= idx_digito` *(pausa)* |
+| **Carga (`S_LOAD`)** | `valid = 1` | `sel_op = 0`, `en_acum = 1`, `en_cnt = 1` | `acum_q <= acum_q + dato * peso(idx)`, `idx_digito <= idx_digito + 1` |
+| **Resta (`S_MOD`)** | `menor_11 = 0` | `sel_op = 1`, `en_acum = 1` | `acum_q <= acum_q - 11` |
+| **Captura (`S_MOD`)** | `menor_11 = 1` | `en_verif = 1` | `verificador <= (acum_q == 10) ? 0 : acum_q[3:0]` |
 
 ---
 
