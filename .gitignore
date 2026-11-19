@@ -1,0 +1,17 @@
+# Artefactos de compilación y simulación
+build/
+*.vvp
+*.vcd
+*.gtkw
+*.log
+*.o
+*.d
+*.a
+
+# Ejecutables generados
+*.out
+
+# Archivos
+.vscode/
+
+imagenes/
