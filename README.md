@@ -63,7 +63,7 @@ make clean
 
 ## 4. Arquitectura del Sistema (FSMD)
 
-### 4.1. Diagrama en Bloques (`verificador_legajo`)
+### 4.1. Diagrama Top Level (`verificador_legajo`)
 
 El sistema implementa una arquitectura **FSMD** (*Finite State Machine with Datapath*), desacoplando el gobierno temporal (`control_legajo`) del procesamiento aritmético (`datapath_legajo`):
 <img width="1603" height="1200" alt="top_level" src="https://github.com/user-attachments/assets/a1c9b215-0397-4002-96f3-6fd653d7bcd4" />
@@ -86,9 +86,9 @@ La unidad de control está codificada siguiendo el estándar de **3 bloques `alw
 
 ---
 
-### 4.3. Descripción del Camino de Datos (`datapath_legajo`)
+### 4.3. Descripción del Datapath (`datapath_legajo`)
 
-El camino de datos ejecuta las operaciones aritméticas y almacena el estado interno del cálculo bajo el gobierno de las señales de control emitidas por `control_legajo`. Su estructura se organiza en cuatro bloques funcionales:
+El camino de datos ejecuta las operaciones aritméticas y almacena el estado interno del cálculo bajo el gobierno de las señales de control emitidas por la UC `control_legajo`. Su estructura se organiza en cuatro bloques funcionales:
 
 1. **Registros de almacenamiento (Secuenciales con `arst`):**
    * **`cnt_pos` (`3 bits`):** Contador ascendente que mantiene el índice del dígito actual (`idx_digito`, de `0` a `5`). Se reinicia sincrónicamente mediante `clr_cnt` y avanza solo cuando `en_cnt = 1`.
