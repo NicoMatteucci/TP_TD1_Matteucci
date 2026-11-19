@@ -89,14 +89,14 @@ module tb_verificador_legajo;
                 errores = errores + 1;
             end
 
-            // 2. Envío de los 3 primeros dígitos en ráfaga continua (valid = 1)
+            // 2. Envío de los 3 primeros dígitos en forma continuada (valid = 1)
             @(negedge clk);
             start = 1'b0;
             valid = 1'b1;
             dato  = d0;
 
             @(negedge clk);
-            // Probamos que start=1 sea ignorado mientras busy=1 (Sección 3)
+            // Probamos que start=1 sea ignorado mientras busy=1
             start = 1'b1;
             dato  = d1;
 
@@ -104,7 +104,7 @@ module tb_verificador_legajo;
             start = 1'b0;
             dato  = d2;
 
-            // 3. Pausa opcional con valid = 0 (Sección 3 y Pregunta 9.d)
+            // 3. Pausa opcional con valid = 0
             if (insertar_pausa) begin
                 @(negedge clk);
                 valid = 1'b0;
@@ -123,16 +123,15 @@ module tb_verificador_legajo;
             @(negedge clk);
             dato = d5;
 
-            // Tras el flanco ascendente del 6to dígito, bajamos valid
-            @(posedge clk);
+            // Pasado un flanco ascendente desde el 6° dígito, se asignan los valores
             @(negedge clk);
             valid = 1'b0;
             dato  = 4'd0;
 
-            // 5. Esperar cálculo del resto (S_MOD) inyectando ruido en valid
+            // 5. Esperar cálculo del resto (S_MOD) mcon valid = 1 ignorado
             ciclos_resta = 0;
             while (done !== 1'b1) begin
-                // Probamos que valid=1 sea ignorado durante el cálculo del resto (Sección 5)
+                // Probamos que valid=1 sea ignorado mientras busy=1
                 valid = 1'b1;
                 dato  = 4'd8;
                 @(posedge clk);
@@ -154,7 +153,7 @@ module tb_verificador_legajo;
             valid = 1'b0;
             dato  = 4'd0;
 
-            // 6. Verificar resultado en el ciclo exacto donde done == 1 (Sección 6)
+            // 6. Verificar resultado en el ciclo exacto donde done == 1
             if ((busy !== 1'b0) || (verificador !== verif_esperado)) begin
                 $display("[ERROR] Legajo %0d%0d%0d%0d%0d%0d -> esperado=%0d, obtenido=%0d, busy=%b",
                          d0, d1, d2, d3, d4, d5, verif_esperado, verificador, busy);
@@ -165,7 +164,7 @@ module tb_verificador_legajo;
                 verificador, ciclos_resta, ciclos_resta + 1, $time);
             end
 
-            // 7. Verificar que done dure EXACTAMENTE 1 ciclo de reloj (Sección 6)
+            // 7. Verificar que done dure EXACTAMENTE 1 ciclo de reloj
             @(posedge clk);
             #1;
             if (done !== 1'b0) begin
@@ -205,7 +204,6 @@ module tb_verificador_legajo;
         probar_legajo(4'd1, 4'd0, 4'd0, 4'd0, 4'd0, 4'd7, 4'd0, 4'd5, 1'b1); // 100007 -> S=21  -> resto 10 -> 0
         probar_legajo(4'd0, 4'd0, 4'd0, 4'd0, 4'd0, 4'd0, 4'd0, 4'd0, 1'b0); // 000000 -> S=0   -> 0 (0 restas)
         probar_legajo(4'd9, 4'd9, 4'd9, 4'd9, 4'd9, 4'd9, 4'd1, 4'd0, 1'b0); // 999999 -> S=243 -> 1 (22 restas)
-
         // ---------------------------------------------------------------------
         // PRUEBA CON LEGAJO PROPIO (Reemplazá estos dígitos por tu legajo)
         // Ejemplo: 204710 -> S = 2*7 + 0*6 + 4*5 + 7*4 + 1*3 + 0*2 = 65
