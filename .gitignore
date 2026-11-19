@@ -18,3 +18,5 @@ imagenes/
 *.png
 *.jpeg
 *.svg
+
+*.sh
