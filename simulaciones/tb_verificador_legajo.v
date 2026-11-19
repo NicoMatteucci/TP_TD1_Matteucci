@@ -160,8 +160,9 @@ module tb_verificador_legajo;
                          d0, d1, d2, d3, d4, d5, verif_esperado, verificador, busy);
                 errores = errores + 1;
             end else begin
-                $display("[OK] Legajo %0d%0d%0d%0d%0d%0d -> Verificador = %0d (ciclos en S_MOD: %0d)",
-                         d0, d1, d2, d3, d4, d5, verificador, ciclos_resta);
+                $display("[OK] Legajo %0d%0d%0d%0d%0d%0d (%s) -> Verif = %0d | Restas: %2d (ciclos S_MOD: %2d) | t=%4t ns",
+                d0, d1, d2, d3, d4, d5, (insertar_pausa ? "pausa" : "rafaga"), 
+                verificador, ciclos_resta, ciclos_resta + 1, $time);
             end
 
             // 7. Verificar que done dure EXACTAMENTE 1 ciclo de reloj (Sección 6)
@@ -189,9 +190,9 @@ module tb_verificador_legajo;
         valid   = 1'b0;
         dato    = 4'd0;
 
-        $display("=================================================================");
+        $display("=======================================================================================");
         $display(" INICIO DE SIMULACION: verificador_legajo (CLK_PERIOD = %0d ns)", CLK_PERIOD);
-        $display("=================================================================");
+        $display("=======================================================================================");
 
         // Reset inicial
         aplicar_reset_asincronico();
@@ -231,12 +232,12 @@ module tb_verificador_legajo;
         probar_legajo(4'd1, 4'd2, 4'd3, 4'd4, 4'd5, 4'd6, 4'd0, 4'd0, 1'b0);
 
         #(CLK_PERIOD * 2);
-        $display("=================================================================");
+        $display("=======================================================================================");
         if (errores == 0)
             $display(" RESULTADO FINAL: EXITO - Todas las pruebas pasaron sin errores.");
         else
             $display(" RESULTADO FINAL: FALLA - Se detectaron %0d errores.", errores);
-        $display("=================================================================");
+        $display("=======================================================================================");
         $finish;
     end
 

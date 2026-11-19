@@ -177,20 +177,20 @@ El diseño fue verificado mediante el banco de pruebas `tb_verificador_legajo.v`
 ### 6.2. Salida de Consola (`make run`)
 
 ```text
-=================================================================
+=======================================================================================
  INICIO DE SIMULACION: verificador_legajo (CLK_PERIOD = 20 ns)
-=================================================================
-[OK] Legajo 123456 -> Verificador = 0 (ciclos en S_MOD: 7)
-[OK] Legajo 654321 -> Verificador = 2 (ciclos en S_MOD: 10)
-[OK] Legajo 111111 -> Verificador = 5 (ciclos en S_MOD: 2)
-[OK] Legajo 100007 -> Verificador = 0 (ciclos en S_MOD: 1)
-[OK] Legajo 000000 -> Verificador = 0 (ciclos en S_MOD: 0)
-[OK] Legajo 999999 -> Verificador = 1 (ciclos en S_MOD: 22)
-[OK] Legajo 204710 -> Verificador = 0 (ciclos en S_MOD: 5)
+=======================================================================================
+[OK] Legajo 123456 (rafaga) -> Verif = 0 | Restas:  7 (ciclos S_MOD:  8) | t=351000 ns
+[OK] Legajo 654321 ( pausa) -> Verif = 2 | Restas: 10 (ciclos S_MOD: 11) | t=791000 ns
+[OK] Legajo 111111 (rafaga) -> Verif = 5 | Restas:  2 (ciclos S_MOD:  3) | t=1011000 ns
+[OK] Legajo 100007 ( pausa) -> Verif = 0 | Restas:  1 (ciclos S_MOD:  2) | t=1271000 ns
+[OK] Legajo 000000 (rafaga) -> Verif = 0 | Restas:  0 (ciclos S_MOD:  1) | t=1451000 ns
+[OK] Legajo 999999 (rafaga) -> Verif = 1 | Restas: 22 (ciclos S_MOD: 23) | t=2071000 ns
+[OK] Legajo 204710 (rafaga) -> Verif = 0 | Restas:  5 (ciclos S_MOD:  6) | t=2351000 ns
 [OK] Aborto por reset asincronico en mitad de carga verificado.
-[OK] Legajo 123456 -> Verificador = 0 (ciclos en S_MOD: 7)
-=================================================================
+[OK] Legajo 123456 (rafaga) -> Verif = 0 | Restas:  7 (ciclos S_MOD:  8) | t=2771000 ns
+=======================================================================================
  RESULTADO FINAL: EXITO - Todas las pruebas pasaron sin errores.
-=================================================================
+=======================================================================================
 ```
 
