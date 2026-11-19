@@ -21,7 +21,7 @@ $$\text{Verificador} = \begin{cases} S \bmod 11 & \text{si } 0 \le (S \bmod 11) 
 El proyecto sigue un **diseño jerárquico** que separa los bloques genéricos reutilizables, el camino de datos (*Datapath*), la unidad de control (*FSM*) y el entorno de simulación:
 
 ```text
-tp_verificador_legajo/
+TP_TD1_Matteucci/
 ├── .gitignore                  # Exclusión de archivos temporales de simulación (*.vvp, *.vcd, work/)
 ├── README.md                   # Documentación técnica, diagramas y análisis del diseño
 ├── docs/                       # Capturas de simulación en GTKWave y consola
@@ -66,7 +66,7 @@ make clean
 ### 4.1. Diagrama en Bloques (`verificador_legajo`)
 
 El sistema implementa una arquitectura **FSMD** (*Finite State Machine with Datapath*), desacoplando el gobierno temporal (`control_legajo`) del procesamiento aritmético (`datapath_legajo`):
-< IMAGEN >
+<img width="1603" height="1200" alt="top_level" src="https://github.com/user-attachments/assets/a1c9b215-0397-4002-96f3-6fd653d7bcd4" />
 
 ---
 
@@ -81,7 +81,12 @@ La unidad de control está codificada siguiendo el estándar de **3 bloques `alw
 
 #### Diagrama de Estados (FSM)
 
-< IMAGEN >
+<img width="1131" height="1600" alt="fsm_control" src="https://github.com/user-attachments/assets/92a42445-e141-4b69-9cfd-9f6560989d46" />
+
+#### Datapath (RTL)
+
+<img width="1131" height="1600" alt="datapath_rtl" src="https://github.com/user-attachments/assets/3f484629-a432-4743-a4ae-adae338a74cf" />
+
 
 ---
 
