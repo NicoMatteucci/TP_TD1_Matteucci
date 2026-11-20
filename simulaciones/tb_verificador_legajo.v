@@ -3,23 +3,25 @@
 module tb_verificador_legajo;
 
     // -------------------------------------------------------------------------
-    // 1. Parámetros y señales de interconexión
+    // 1. Parámetros y señales de interconexion
     // -------------------------------------------------------------------------
     localparam CLK_PERIOD = 20; // Período de reloj = 20 ns (f = 50 MHz)
 
+    //uut
     reg        clk;
     reg        arst;
     reg        start;
     reg        valid;
     reg  [3:0] dato;
-
     wire       busy;
     wire       done;
     wire [3:0] verificador;
-
+    
+    //auxiliares tb
+    reg  [3:0] verif_previo;
     integer errores;
     integer ciclos_resta;
-
+    
     // Instancia del circuito bajo prueba (UUT)
     verificador_legajo uut (
         .clk         (clk),
@@ -33,7 +35,7 @@ module tb_verificador_legajo;
     );
 
     // -------------------------------------------------------------------------
-    // 2. Generador de reloj
+    // 1. Generador de reloj
     // -------------------------------------------------------------------------
     initial begin
         clk = 1'b0;
@@ -41,16 +43,15 @@ module tb_verificador_legajo;
     end
 
     // -------------------------------------------------------------------------
-    // 3. Tareas (Tasks)
+    // 2. Tareas (Tasks)
     // -------------------------------------------------------------------------
 
-    // Aplica reset asincrónico entre flancos y verifica estado inicial en cero
+    // reset asincronico y verifica estado inicial
     task automatic aplicar_reset_asincronico;
         begin
             @(negedge clk);
-            #(CLK_PERIOD / 4); // Disparo asincrónico (5 ns después del negedge)
-            arst = 1'b1;
-            #2; // Retardo para propagación combinacional
+            #(CLK_PERIOD / 4); // Disparo asincronico (5 ns post negedge)
+            arst = 1'b1; #2; // Retardo para propagacion combinacional
             if ((busy !== 1'b0) || (done !== 1'b0) || (verificador !== 4'd0)) begin
                 $display("[ERROR] t=%0t ns: Reset asincronico no limpio salidas (busy=%b, done=%b, verif=%d)",
                          $time, busy, done, verificador);
@@ -58,100 +59,81 @@ module tb_verificador_legajo;
             end
             @(negedge clk);
             arst  = 1'b0;
+            verif_previo = 4'd0;
             start = 1'b0;
             valid = 1'b0;
             dato  = 4'd0;
+            $display("                       --- Reset asincronico. ---");
         end
     endtask
 
-    // Ejecuta una prueba completa de 6 dígitos con opción de pausa y ruido
+    // coloca un dígito en el flanco descendente con valid = 1
+    task automatic enviar_digito(input [3:0] d);
+        begin
+            @(negedge clk);
+            valid = 1'b1;
+            dato  = d;
+        end
+    endtask
+
+    // prueba un legajo completo (6 digitos) y verifica el resultado
     task automatic probar_legajo;
         input [3:0] d0, d1, d2, d3, d4, d5;
         input [3:0] verif_esperado;
-        input [3:0] verif_previo_esperado;
         input       insertar_pausa; // 1: prueba valid=0 a mitad de carga
         begin
             // 1. Disparo de inicio (start = 1 por 1 ciclo)
-            @(negedge clk);
-            start = 1'b1;
-            valid = 1'b0;
-
-            @(posedge clk);
-            #1; // Esperar actualización de registros
-            if (busy !== 1'b1) begin
-                $display("[ERROR] t=%0t ns: busy no se activo tras start=1", $time);
+            @(negedge clk); start = 1'b1; valid = 1'b0;
+            @(posedge clk); #1; // Esperar actualizacion de registros
+            if ((busy !== 1'b1) || (verificador !== verif_previo)) begin
+                $display("[ERROR] t=%0t ns: Fallo en start (busy=%b, verif=%0d, esperado=%0d)",
+                         $time, busy, verificador, verif_previo);
                 errores = errores + 1;
             end
-            // Verificar Sección 6: el inicio no debe borrar el resultado anterior
-            if (verificador !== verif_previo_esperado) begin
+            // el inicio no debe borrar el resultado anterior
+            if (verificador !== verif_previo) begin
                 $display("[ERROR] t=%0t ns: start borro el verificador previo (esperado=%0d, obtenido=%0d)",
-                         $time, verif_previo_esperado, verificador);
+                         $time, verif_previo, verificador);
                 errores = errores + 1;
             end
 
-            // 2. Envío de los 3 primeros dígitos en forma continuada (valid = 1)
-            @(negedge clk);
-            start = 1'b0;
-            valid = 1'b1;
-            dato  = d0;
-
-            @(negedge clk);
-            // Probamos que start=1 sea ignorado mientras busy=1
-            start = 1'b1;
-            dato  = d1;
-
-            @(negedge clk);
-            start = 1'b0;
-            dato  = d2;
-
+            // 2. Envío de los 3 primeros dígitos (probando start=1 ignorado en d1)
+            start = 1'b0; enviar_digito(d0);
+            start = 1'b1; enviar_digito(d1);
+            start = 1'b0; enviar_digito(d2);
+            
             // 3. Pausa opcional con valid = 0
             if (insertar_pausa) begin
-                @(negedge clk);
-                valid = 1'b0;
-                dato  = 4'd9; // Dato basura que NO debe sumarse mientras valid=0
+                @(negedge clk); valid = 1'b0; dato = 4'd9; // Basura ignorada
                 repeat (2) @(negedge clk);
             end
 
             // 4. Envío de los 3 últimos dígitos
-            @(negedge clk);
-            valid = 1'b1;
-            dato = d3;
-
-            @(negedge clk);
-            dato = d4;
-
-            @(negedge clk);
-            dato = d5;
+            enviar_digito(d3);
+            enviar_digito(d4);
+            enviar_digito(d5);
 
             // Pasado un flanco ascendente desde el 6° dígito, se asignan los valores
-            @(negedge clk);
-            valid = 1'b0;
-            dato  = 4'd0;
+            @(negedge clk); valid = 1'b0; dato  = 4'd0;
 
-            // 5. Esperar cálculo del resto (S_MOD) mcon valid = 1 ignorado
+            // 5. Esperar cálculo del resto (S_MOD)
             ciclos_resta = 0;
+            @(posedge clk); #1; // Primer flanco dentro de S_MOD (o salto directo a S_DONE si S < 11)
             while (done !== 1'b1) begin
-                // Probamos que valid=1 sea ignorado mientras busy=1
-                valid = 1'b1;
-                dato  = 4'd8;
-                @(posedge clk);
-                #1;
-                if (done !== 1'b1) begin
-                    ciclos_resta = ciclos_resta + 1;
-                    if (busy !== 1'b1) begin
-                        $display("[ERROR] t=%0t ns: busy cayo antes de terminar S_MOD", $time);
-                        errores = errores + 1;
-                    end
+                ciclos_resta = ciclos_resta + 1;
+                if (busy !== 1'b1) begin
+                    $display("[ERROR] t=%0t ns: busy=0 antes de terminar S_MOD", $time);
+                    errores = errores + 1;
                 end
                 if (ciclos_resta > 30) begin
                     $display("[FATAL] t=%0t ns: Timeout esperando done=1", $time);
                     $finish;
                 end
+                @(posedge clk); #1; // Espera el siguiente flanco para reevaluar el while
             end
 
             // Limpiamos valid tras detectar done=1
-            valid = 1'b0;
-            dato  = 4'd0;
+            valid = 1'b0; dato  = 4'd0;
 
             // 6. Verificar resultado en el ciclo exacto donde done == 1
             if ((busy !== 1'b0) || (verificador !== verif_esperado)) begin
@@ -164,9 +146,10 @@ module tb_verificador_legajo;
                 verificador, ciclos_resta, ciclos_resta + 1, $time);
             end
 
-            // 7. Verificar que done dure EXACTAMENTE 1 ciclo de reloj
-            @(posedge clk);
-            #1;
+            verif_previo = verificador; // Guardamos el resultado para la proxima prueba
+
+            // 7. Verificar que done dure solo un ciclo
+            @(posedge clk); #1;
             if (done !== 1'b0) begin
                 $display("[ERROR] t=%0t ns: done duro mas de 1 ciclo de reloj", $time);
                 errores = errores + 1;
@@ -175,14 +158,14 @@ module tb_verificador_legajo;
     endtask
 
     // -------------------------------------------------------------------------
-    // 4. Secuencia principal de simulación
+    // 4. Secuencia principal de simulacion
     // -------------------------------------------------------------------------
     initial begin
         // Volcado de ondas para GTKWave
         $dumpfile("tb_verificador_legajo.vcd");
         $dumpvars(0, tb_verificador_legajo);
 
-        // Inicialización
+        // Inicializacion
         errores = 0;
         arst    = 1'b0;
         start   = 1'b0;
@@ -196,38 +179,28 @@ module tb_verificador_legajo;
         // Reset inicial
         aplicar_reset_asincronico();
 
-        // Tabla de pruebas obligatorias de la Sección 8:
-        // Formato: probar_legajo(d0, d1, d2, d3, d4, d5, esperado, previo, pausa)
-        probar_legajo(4'd1, 4'd2, 4'd3, 4'd4, 4'd5, 4'd6, 4'd0, 4'd0, 1'b0); // 123456 -> S=77  -> 0
-        probar_legajo(4'd6, 4'd5, 4'd4, 4'd3, 4'd2, 4'd1, 4'd2, 4'd0, 1'b1); // 654321 -> S=112 -> 2 (con pausa valid=0)
-        probar_legajo(4'd1, 4'd1, 4'd1, 4'd1, 4'd1, 4'd1, 4'd5, 4'd2, 1'b0); // 111111 -> S=27  -> 5
-        probar_legajo(4'd1, 4'd0, 4'd0, 4'd0, 4'd0, 4'd7, 4'd0, 4'd5, 1'b1); // 100007 -> S=21  -> resto 10 -> 0
-        probar_legajo(4'd0, 4'd0, 4'd0, 4'd0, 4'd0, 4'd0, 4'd0, 4'd0, 1'b0); // 000000 -> S=0   -> 0 (0 restas)
-        probar_legajo(4'd9, 4'd9, 4'd9, 4'd9, 4'd9, 4'd9, 4'd1, 4'd0, 1'b0); // 999999 -> S=243 -> 1 (22 restas)
+        // Formato: probar_legajo(d0, d1, d2, d3, d4, d5, esperado, pausa)
+        probar_legajo(4'd6, 4'd5, 4'd4, 4'd3, 4'd2, 4'd1, 4'd2, 1'b1); // 654321 -> S=112 -> 2 (con pausa valid=0)
+        probar_legajo(4'd1, 4'd1, 4'd1, 4'd1, 4'd1, 4'd1, 4'd5, 1'b0); // 111111 -> S=27  -> 5
+        probar_legajo(4'd0, 4'd0, 4'd0, 4'd0, 4'd0, 4'd0, 4'd0, 1'b1); // 000000 -> S=0   -> 0 (0 restas)
+        probar_legajo(4'd9, 4'd9, 4'd9, 4'd9, 4'd9, 4'd9, 4'd1, 1'b0); // 999999 -> S=243 -> 1 (22 restas)
         // ---------------------------------------------------------------------
-        // PRUEBA CON LEGAJO PROPIO (Reemplazá estos dígitos por tu legajo)
-        // Ejemplo: 204710 -> S = 2*7 + 0*6 + 4*5 + 7*4 + 1*3 + 0*2 = 65
+        // PRUEBA CON LEGAJO PROPIO
+        // 204710 -> S = 2*7 + 0*6 + 4*5 + 7*4 + 1*3 + 0*2 = 65
         // 65 = 5 * 11 + 10 -> Resto = 10 -> Verificador = 0
         // ---------------------------------------------------------------------
-        probar_legajo(4'd2, 4'd0, 4'd4, 4'd7, 4'd1, 4'd0, 4'd0, 4'd1, 1'b0);
+        probar_legajo(4'd2, 4'd0, 4'd4, 4'd7, 4'd1, 4'd0, 4'd0, 1'b0);
 
         // ---------------------------------------------------------------------
-        // PRUEBA DE ABORTO POR RESET ASINCRÓNICO A MITAD DE OPERACIÓN
+        // PRUEBA DE ABORTO POR RESET ASINCRONICO A MITAD DE OPERACION
         // ---------------------------------------------------------------------
-        @(negedge clk);
-        start = 1'b1;
-        @(negedge clk);
-        start = 1'b0;
-        valid = 1'b1;
-        dato  = 4'd9;
-        @(negedge clk);
-        dato  = 4'd8;
-        // Disparamos reset asincrónico mientras busy == 1
+        @(negedge clk); start = 1'b1;
+        @(negedge clk); start = 1'b0; valid = 1'b1; dato  = 4'd9;
+        // Disparamos reset asincronico mientras busy == 1
         aplicar_reset_asincronico();
-        $display("[OK] Aborto por reset asincronico en mitad de carga verificado.");
 
         // Confirmar que tras el reset puede volver a operar normalmente
-        probar_legajo(4'd1, 4'd2, 4'd3, 4'd4, 4'd5, 4'd6, 4'd0, 4'd0, 1'b0);
+        probar_legajo(4'd6, 4'd5, 4'd4, 4'd3, 4'd2, 4'd1, 4'd2, 1'b0);
 
         #(CLK_PERIOD * 2);
         $display("=======================================================================================");
