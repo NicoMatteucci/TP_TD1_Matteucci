@@ -179,13 +179,13 @@ module tb_verificador_legajo;
         // 204710 -> S = 65 = 5 * 11 + 10 -> Resto = 10 -> Verificador = 0
         probar_legajo(4'd2, 4'd0, 4'd4, 4'd7, 4'd1, 4'd0, 4'd0, 1'b0);
         // ---------------------------------------------------------------------
-        // probar_legajo(4'd1, 4'd2, 4'd3, 4'd4, 4'd5, 4'd6, 4'd0, 1'b1); // 123456 -> S=77  -> 0 (con pausa valid=0)
+        probar_legajo(4'd1, 4'd2, 4'd3, 4'd4, 4'd5, 4'd6, 4'd0, 1'b1); // 123456 -> S=77  -> 0 (con pausa valid=0)
         probar_legajo(4'd6, 4'd5, 4'd4, 4'd3, 4'd2, 4'd1, 4'd2, 1'b1); // 654321 -> S=112 -> 2 (con pausa valid=0)
         probar_legajo(4'd1, 4'd1, 4'd1, 4'd1, 4'd1, 4'd1, 4'd5, 1'b0); // 111111 -> S=27  -> 5
-        // probar_legajo(4'd1, 4'd0, 4'd0, 4'd0, 4'd0, 4'd0, 4'd7, 1'b0); // 100007 -> S=21 (resto 10) -> 0
+        probar_legajo(4'd1, 4'd0, 4'd0, 4'd0, 4'd0, 4'd0, 4'd7, 1'b0); // 100007 -> S=21 (resto 10) -> 0
         probar_legajo(4'd0, 4'd0, 4'd0, 4'd0, 4'd0, 4'd0, 4'd0, 1'b1); // 000000 -> S=0   -> 0 (0 restas)
         probar_legajo(4'd9, 4'd9, 4'd9, 4'd9, 4'd9, 4'd9, 4'd1, 1'b0); // 999999 -> S=243 -> 1 (22 restas)
-        // probar_legajo(d0, d1, d2, d3, d4, d5, esperado, pausa)
+        //           (d0,   d1,   d2,   d3,   d4,   d5, esperado, pausa)
 
         // Reset Asincronico en medio de peracion (busy=1)
         @(negedge clk); start = 1'b1;

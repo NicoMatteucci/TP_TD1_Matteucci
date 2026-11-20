@@ -181,12 +181,14 @@ El diseño fue verificado mediante el banco de pruebas `tb_verificador_legajo.v`
 =======================================================================================
                        --- Reset asincronico. ---
 [OK] Legajo 204710 (rafaga) -> Verif = 0 | Restas:  5 (ciclos S_MOD:  6) | t=311000 ns
-[OK] Legajo 654321 ( pausa) -> Verif = 2 | Restas: 10 (ciclos S_MOD: 11) | t=911000 ns
-[OK] Legajo 111111 (rafaga) -> Verif = 5 | Restas:  2 (ciclos S_MOD:  3) | t=1131000 ns
-[OK] Legajo 000000 ( pausa) -> Verif = 0 | Restas:  0 (ciclos S_MOD:  1) | t=1531000 ns
-[OK] Legajo 999999 (rafaga) -> Verif = 1 | Restas: 22 (ciclos S_MOD: 23) | t=2151000 ns
+[OK] Legajo 123456 ( pausa) -> Verif = 0 | Restas:  7 (ciclos S_MOD:  8) | t=851000 ns
+[OK] Legajo 654321 ( pausa) -> Verif = 2 | Restas: 10 (ciclos S_MOD: 11) | t=1451000 ns
+[OK] Legajo 111111 (rafaga) -> Verif = 5 | Restas:  2 (ciclos S_MOD:  3) | t=1671000 ns
+[OK] Legajo 100000 (rafaga) -> Verif = 7 | Restas:  0 (ciclos S_MOD:  1) | t=1851000 ns
+[OK] Legajo 000000 ( pausa) -> Verif = 0 | Restas:  0 (ciclos S_MOD:  1) | t=2251000 ns
+[OK] Legajo 999999 (rafaga) -> Verif = 1 | Restas: 22 (ciclos S_MOD: 23) | t=2871000 ns
                        --- Reset asincronico. ---
-[OK] Legajo 654321 (rafaga) -> Verif = 2 | Restas: 10 (ciclos S_MOD: 11) | t=2611000 ns
+[OK] Legajo 654321 (rafaga) -> Verif = 2 | Restas: 10 (ciclos S_MOD: 11) | t=3331000 ns
 =======================================================================================
  RESULTADO FINAL: EXITO - Todas las pruebas pasaron sin errores.
 =======================================================================================
