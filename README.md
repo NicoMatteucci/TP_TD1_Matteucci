@@ -83,7 +83,6 @@ La unidad de control está codificada siguiendo el estándar de **3 bloques `alw
 
 <img width="1131" height="1600" alt="fsm_control" src="https://github.com/user-attachments/assets/92a42445-e141-4b69-9cfd-9f6560989d46" />
 
-
 ---
 
 ### 4.3. Descripción del Datapath (`datapath_legajo`)
@@ -112,7 +111,7 @@ El camino de datos ejecuta las operaciones aritméticas y almacena el estado int
 
 <img width="1131" height="1600" alt="datapath_rtl" src="https://github.com/user-attachments/assets/3f484629-a432-4743-a4ae-adae338a74cf" />
 
-#### Tabla de Micro-operaciones RTL (Palabras de Control)
+#### Tabla de Operaciones RTL (Palabras de Control)
 
 | Fase / Estado FSM | Condición | Señales Activas de Control | Transferencia entre Registros (RTL) |
 | :--- | :--- | :--- | :--- |
@@ -166,13 +165,13 @@ El diseño fue verificado mediante el banco de pruebas `tb_verificador_legajo.v`
 
 | Dígitos Ingresados | Suma Ponderada ($S$) | Resto ($S \bmod 11$) | Verificador Esperado | Verificador Obtenido | Ciclos de Resta (`S_MOD`) | Estado |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| `204710` | `65` | `10` | `0` | `0` | 5 | EXITO |
 | `123456` | `77` | `0` | `0` | `0` | 7 | EXITO |
 | `654321` | `112` | `2` | `2` | `2` | 10 | EXITO |
 | `111111` | `27` | `5` | `5` | `5` | 2 | EXITO |
 | `100007` | `21` | `10` | `0` | `0` | 1 | EXITO |
 | `000000` | `0` | `0` | `0` | `0` | 0 | EXITO |
 | `999999` | `243` | `1` | `1` | `1` | 22 | EXITO |
-| `204710` | `65` | `10` | `0` | `0` | 5 | EXITO |
 
 ### 6.2. Salida de Consola (`make run`)
 
@@ -180,15 +179,14 @@ El diseño fue verificado mediante el banco de pruebas `tb_verificador_legajo.v`
 =======================================================================================
  INICIO DE SIMULACION: verificador_legajo (CLK_PERIOD = 20 ns)
 =======================================================================================
-[OK] Legajo 123456 (rafaga) -> Verif = 0 | Restas:  7 (ciclos S_MOD:  8) | t=351000 ns
-[OK] Legajo 654321 ( pausa) -> Verif = 2 | Restas: 10 (ciclos S_MOD: 11) | t=791000 ns
-[OK] Legajo 111111 (rafaga) -> Verif = 5 | Restas:  2 (ciclos S_MOD:  3) | t=1011000 ns
-[OK] Legajo 100007 ( pausa) -> Verif = 0 | Restas:  1 (ciclos S_MOD:  2) | t=1271000 ns
-[OK] Legajo 000000 (rafaga) -> Verif = 0 | Restas:  0 (ciclos S_MOD:  1) | t=1451000 ns
-[OK] Legajo 999999 (rafaga) -> Verif = 1 | Restas: 22 (ciclos S_MOD: 23) | t=2071000 ns
-[OK] Legajo 204710 (rafaga) -> Verif = 0 | Restas:  5 (ciclos S_MOD:  6) | t=2351000 ns
-[OK] Aborto por reset asincronico en mitad de carga verificado.
-[OK] Legajo 123456 (rafaga) -> Verif = 0 | Restas:  7 (ciclos S_MOD:  8) | t=2771000 ns
+                       --- Reset asincronico. ---
+[OK] Legajo 204710 (rafaga) -> Verif = 0 | Restas:  5 (ciclos S_MOD:  6) | t=311000 ns
+[OK] Legajo 654321 ( pausa) -> Verif = 2 | Restas: 10 (ciclos S_MOD: 11) | t=911000 ns
+[OK] Legajo 111111 (rafaga) -> Verif = 5 | Restas:  2 (ciclos S_MOD:  3) | t=1131000 ns
+[OK] Legajo 000000 ( pausa) -> Verif = 0 | Restas:  0 (ciclos S_MOD:  1) | t=1531000 ns
+[OK] Legajo 999999 (rafaga) -> Verif = 1 | Restas: 22 (ciclos S_MOD: 23) | t=2151000 ns
+                       --- Reset asincronico. ---
+[OK] Legajo 654321 (rafaga) -> Verif = 2 | Restas: 10 (ciclos S_MOD: 11) | t=2611000 ns
 =======================================================================================
  RESULTADO FINAL: EXITO - Todas las pruebas pasaron sin errores.
 =======================================================================================
