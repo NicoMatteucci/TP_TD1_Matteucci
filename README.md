@@ -194,3 +194,7 @@ El diseño fue verificado mediante el banco de pruebas `tb_verificador_legajo.v`
 =======================================================================================
 ```
 
+### 6.3. Ejemplos de legajos (`WaveTrace`)
+<img width="1129" height="1132" alt="legajos_ejemplos" src="https://github.com/user-attachments/assets/26328841-94e0-4308-a52f-00535ddeff74" />
+
+
