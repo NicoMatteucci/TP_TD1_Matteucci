@@ -1,5 +1,6 @@
 # Verificador de Dígito de Legajo — Técnicas Digitales 1 (R3051) - Matteucci Nicolás - **Legajo:** 204710-0
-
+---
+link al repo: https://github.com/NicoMatteucci/TP_TD1_Matteucci/tree/main
 ---
 
 ## 1. Descripción del Proyecto y Algoritmo
