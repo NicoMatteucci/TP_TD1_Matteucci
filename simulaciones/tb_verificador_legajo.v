@@ -3,9 +3,9 @@
 module tb_verificador_legajo;
 
     // -------------------------------------------------------------------------
-    // 1. Parámetros y señales de interconexion
+    // 1. Parametros y señales de interconexion
     // -------------------------------------------------------------------------
-    localparam CLK_PERIOD = 20; // Período de reloj = 20 ns (f = 50 MHz)
+    localparam CLK_PERIOD = 20; // Periodo de reloj = 20 ns (f = 50 MHz)
 
     //uut
     reg        clk;
@@ -67,7 +67,7 @@ module tb_verificador_legajo;
         end
     endtask
 
-    // coloca un dígito en el flanco descendente con valid = 1
+    // coloca un digito en el flanco descendente con valid = 1
     task automatic enviar_digito(input [3:0] d);
         begin
             @(negedge clk);
@@ -97,7 +97,7 @@ module tb_verificador_legajo;
                 errores = errores + 1;
             end
 
-            // 2. Envío de los 3 primeros dígitos (probando start=1 ignorado en d1)
+            // 2. Envio de los 3 primeros digitos (probando start=1 ignorado en d1)
             start = 1'b0; enviar_digito(d0);
             start = 1'b1; enviar_digito(d1);
             start = 1'b0; enviar_digito(d2);
@@ -105,18 +105,18 @@ module tb_verificador_legajo;
             // 3. Pausa opcional con valid = 0
             if (insertar_pausa) begin
                 @(negedge clk); valid = 1'b0; dato = 4'd9; // Basura ignorada
-                repeat (2) @(negedge clk);
+                repeat (10) @(negedge clk);
             end
 
-            // 4. Envío de los 3 últimos dígitos
+            // 4. Envio de los 3 últimos digitos
             enviar_digito(d3);
             enviar_digito(d4);
             enviar_digito(d5);
 
-            // Pasado un flanco ascendente desde el 6° dígito, se asignan los valores
+            // Pasado un flanco ascendente desde el 6° digito, se asignan los valores
             @(negedge clk); valid = 1'b0; dato  = 4'd0;
 
-            // 5. Esperar cálculo del resto (S_MOD)
+            // 5. Esperar calculo del resto (S_MOD)
             ciclos_resta = 0;
             @(posedge clk); #1; // Primer flanco dentro de S_MOD (o salto directo a S_DONE si S < 11)
             while (done !== 1'b1) begin
@@ -161,11 +161,9 @@ module tb_verificador_legajo;
     // 4. Secuencia principal de simulacion
     // -------------------------------------------------------------------------
     initial begin
-        // Volcado de ondas para GTKWave
         $dumpfile("tb_verificador_legajo.vcd");
         $dumpvars(0, tb_verificador_legajo);
 
-        // Inicializacion
         errores = 0;
         arst    = 1'b0;
         start   = 1'b0;
@@ -176,31 +174,30 @@ module tb_verificador_legajo;
         $display(" INICIO DE SIMULACION: verificador_legajo (CLK_PERIOD = %0d ns)", CLK_PERIOD);
         $display("=======================================================================================");
 
-        // Reset inicial
         aplicar_reset_asincronico();
 
-        // Formato: probar_legajo(d0, d1, d2, d3, d4, d5, esperado, pausa)
-        probar_legajo(4'd6, 4'd5, 4'd4, 4'd3, 4'd2, 4'd1, 4'd2, 1'b1); // 654321 -> S=112 -> 2 (con pausa valid=0)
-        probar_legajo(4'd1, 4'd1, 4'd1, 4'd1, 4'd1, 4'd1, 4'd5, 1'b0); // 111111 -> S=27  -> 5
-        probar_legajo(4'd0, 4'd0, 4'd0, 4'd0, 4'd0, 4'd0, 4'd0, 1'b1); // 000000 -> S=0   -> 0 (0 restas)
-        probar_legajo(4'd9, 4'd9, 4'd9, 4'd9, 4'd9, 4'd9, 4'd1, 1'b0); // 999999 -> S=243 -> 1 (22 restas)
         // ---------------------------------------------------------------------
         // PRUEBA CON LEGAJO PROPIO
-        // 204710 -> S = 2*7 + 0*6 + 4*5 + 7*4 + 1*3 + 0*2 = 65
-        // 65 = 5 * 11 + 10 -> Resto = 10 -> Verificador = 0
-        // ---------------------------------------------------------------------
+        // 204710 -> S = 65 = 5 * 11 + 10 -> Resto = 10 -> Verificador = 0
         probar_legajo(4'd2, 4'd0, 4'd4, 4'd7, 4'd1, 4'd0, 4'd0, 1'b0);
+        // ---------------------------------------------------------------------
+        // probar_legajo(4'd1, 4'd2, 4'd3, 4'd4, 4'd5, 4'd6, 4'd0, 1'b1); // 123456 -> S=77  -> 0 (con pausa valid=0)
+        probar_legajo(4'd6, 4'd5, 4'd4, 4'd3, 4'd2, 4'd1, 4'd2, 1'b1); // 654321 -> S=112 -> 2 (con pausa valid=0)
+        probar_legajo(4'd1, 4'd1, 4'd1, 4'd1, 4'd1, 4'd1, 4'd5, 1'b0); // 111111 -> S=27  -> 5
+        // probar_legajo(4'd1, 4'd0, 4'd0, 4'd0, 4'd0, 4'd0, 4'd7, 1'b0); // 100007 -> S=21 resto 10 -> 0
+        probar_legajo(4'd0, 4'd0, 4'd0, 4'd0, 4'd0, 4'd0, 4'd0, 1'b1); // 000000 -> S=0   -> 0 (0 restas)
+        probar_legajo(4'd9, 4'd9, 4'd9, 4'd9, 4'd9, 4'd9, 4'd1, 1'b0); // 999999 -> S=243 -> 1 (22 restas)
+        // probar_legajo(d0, d1, d2, d3, d4, d5, esperado, pausa)
 
-        // ---------------------------------------------------------------------
-        // PRUEBA DE ABORTO POR RESET ASINCRONICO A MITAD DE OPERACION
-        // ---------------------------------------------------------------------
+        // Reset Asincronico en medio de peracion (busy=1)
         @(negedge clk); start = 1'b1;
-        @(negedge clk); start = 1'b0; valid = 1'b1; dato  = 4'd9;
-        // Disparamos reset asincronico mientras busy == 1
+        enviar_digito(4'd9); start = 1'b0;
         aplicar_reset_asincronico();
-
-        // Confirmar que tras el reset puede volver a operar normalmente
-        probar_legajo(4'd6, 4'd5, 4'd4, 4'd3, 4'd2, 4'd1, 4'd2, 1'b0);
+        
+        // al volver del reset opera normalment
+        // probar_legajo(4'd1, 4'd2, 4'd3, 4'd4, 4'd5, 4'd6, 4'd0, 1'b0); // 123456 -> S=77  -> 0
+        probar_legajo(4'd6, 4'd5, 4'd4, 4'd3, 4'd2, 4'd1, 4'd2, 1'b0); // 654321 -> S=112 -> 2
+        // ---------------------------------------------------------------------
 
         #(CLK_PERIOD * 2);
         $display("=======================================================================================");
