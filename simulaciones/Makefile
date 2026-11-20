@@ -7,6 +7,7 @@ GTKWAVE  = gtkwave
 SRC_DIR   = ../src
 SIM_DIR   = .
 BUILD_DIR = work
+BUILD_DIR_2 = ../build
 
 # Toma todos los módulos de ../src y los testbenches de simulaciones/
 SOURCES = $(wildcard $(SRC_DIR)/*.v) $(wildcard $(SIM_DIR)/*.v)
@@ -31,5 +32,5 @@ view: run
 	$(GTKWAVE) $(VCD) &
 
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_DIR) $(BUILD_DIR_2)
 	rm -f *.vcd
