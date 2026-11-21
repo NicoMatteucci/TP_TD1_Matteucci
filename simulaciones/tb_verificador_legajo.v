@@ -130,9 +130,6 @@ module tb_verificador_legajo;
                 @(posedge clk); #1; // Espera el siguiente flanco para reevaluar el while
             end
 
-            // Limpiamos valid tras detectar done=1
-            valid = 1'b0; dato  = 4'd0;
-
             // 6. Verificar resultado en el ciclo exacto donde done == 1
             if ((busy !== 1'b0) || (verificador !== verif_esperado)) begin
                 $display("[ERROR] Legajo %0d%0d%0d%0d%0d%0d -> esperado=%0d, obtenido=%0d, busy=%b",
